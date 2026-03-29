@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+</head>
+<body>
+    <button onclick="on()">Light on</button>
+    <img src="https://www.w3schools.com/js/pic_bulboff.gif" id="img"onmouseenter="on()" onmouseout="off()">
+    <button onclick="off()">light off</button>
+    <script>
+        let a=document.getElementById("img");
+        function on(){
+            a.src="https://media3.giphy.com/media/v1.Y2lkPTZjMDliOTUyNXl1MGtia28ycXNzdzQ4bDNzdDMyaDZxdHlrZ2VtZnJ2YnplNG9pMiZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/d69DqmmGcCrJAtffHi/200w_d.gif"
+        }
+        function off(){
+            a.src="https://www.w3schools.com/js/pic_bulboff.gif"
+        }
+    </script>
+</body>
+</html>
