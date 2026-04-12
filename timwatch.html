@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Timeless Watches – Product Page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Bootstrap CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f5f5f5;
+      font-family: Arial, sans-serif;
+    }
+
+    .product-container {
+      max-width: 1100px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      display: flex;
+      gap: 40px;
+    }
+
+    .image-section {
+      width: 50%;
+    }
+
+    .main-image img {
+      width: 100%;
+      border-radius: 10px;
+      transition: transform 0.4s ease;
+    }
+
+    .main-image img:hover {
+      transform: scale(1.05);
+    }
+
+    .thumbs {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+
+    .thumbs img {
+      width: 30%;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .thumbs img:hover {
+      transform: scale(1.1);
+    }
+
+    .details-section {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .price {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .old-price {
+      text-decoration: line-through;
+      color: gray;
+      font-size: 16px;
+      margin-left: 10px;
+    }
+
+    .discount {
+      color: green;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
+    .rating {
+      color: #f4b400;
+      margin: 10px 0;
+    }
+
+    .qty-box {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .qty-box button {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: #ddd;
+      font-size: 20px;
+      transition: background 0.3s;
+    }
+
+    .qty-box button:hover {
+      background: #bbb;
+    }
+
+    .add-btn {
+      background: #0d1b2a;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+
+    .add-btn:hover {
+      background: #1b263b;
+    }
+
+    .offer-box {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="product-container">
+
+
+  <div class="image-section">
+    <div class="main-image">
+      <img src="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcT6GxNKxksq0OTK6pIq-obWYn_t2jd9hrUFaa2DWOSIngHIniNBX_yk15oVUpOkyCpzCSzjax4A1IrXA9-MPG4i4vOun2_shoYaV0y_ajwZm3EG5iaFAVGSeg" width="300px" height="400px" alt="Luxury Watch">
+    </div>
+
+    <div class="thumbs">
+      <img src="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRNKbgA3CHHfaXfYwUcEWLo8TOA1GQ7SK91HuOaFIVa8_WfeS2_-SAVFqeFB3-_-MItiDv0wmUTUP7vmWZX6nvXyfecCmTLwTOl02GZOA">
+      <img src="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcT93Y5ikSGxUiTGlhjk3lo2xXryniBQXxAFgpLQTnn4gL9vrevZMK81At7opphTuL7Anp92bnQh1EbpOabXlgu_c7gsButnqdcwIEdI7xNppwoLZKUGvfE">
+      <img src="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRgvckDdZm3gTU-Hfo24-pJejt5yVv9oIrZ9duTNEV8LOqKcNDDj64CInWOkmbLVeglCGc70A9WDerK4nsEK-OAMlc4NIKLwld7u5xFzej4lZ86qrACxVo">
+    </div>
+  </div>
+
+  
+  <div class="details-section">
+    <div>
+      <h2>Elegant Luxury Watch</h2>
+      <p class="text-muted">PRESTIGE TIME CO.</p>
+
+      <div class="price">
+        $499.99
+        <span class="old-price">$799.99</span>
+        <span class="discount">38% OFF</span>
+      </div>
+
+      <p class="mt-3">
+        This luxurious timepiece combines elegance with precision craftsmanship.
+        Perfect for formal occasions or everyday wear.
+      </p>
+
+      <div class="rating">
+         <span class="text-muted">(4.8 / 256 reviews)</span>
+      </div>
+
+      <div class="qty-box">
+        <button>-</button>
+        <span>1</span>
+        <button>+</button>
+      </div>
+
+      <button class="add-btn w-100">Add to Bag</button>
+    </div>
+
+    <div class="offer-box">
+      <h6>Limited-Time Offer!</h6>
+      <p>Get an additional 10% off on your first purchase</p>
+      <button class="btn btn-dark btn-sm">Sign Up Now</button>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
