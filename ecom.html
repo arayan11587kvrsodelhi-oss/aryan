@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple E-Commerce</title>
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  background: #f4f4f4;
+}
+
+header {
+  background: #333;
+  color: white;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+button {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.products {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+.product {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  width: 180px;
+  text-align: center;
+}
+
+.product img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.cart {
+  position: fixed;
+  right: 0;
+  top: 60px;
+  width: 250px;
+  background: white;
+  padding: 15px;
+  display: none;
+  border-left: 2px solid #ccc;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+.page {
+  padding: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Aryan's Shop</h1>
+  <div>
+    <button onclick="showPage('shop')">Shop</button>
+    <button onclick="showPage('checkout')">Checkout</button>
+    <button onclick="toggleCart()">Cart (<span id="cart-count">0</span>)</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<!-- LOGIN PAGE -->
+<div id="login-page" class="page">
+  <h2>Login</h2>
+  <input type="text" id="username" placeholder="Enter username"><br><br>
+  <input type="password" id="password" placeholder="Enter password"><br><br>
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- SHOP PAGE -->
+<div id="shop-page" class="page hidden">
+  <h2>Products</h2>
+  <div class="products" id="product-list"></div>
+</div>
+
+<!-- CHECKOUT PAGE -->
+<div id="checkout-page" class="page hidden">
+  <h2>Checkout</h2>
+  <ul id="checkout-items"></ul>
+  <h3>Total: ₹<span id="checkout-total">0</span></h3>
+  <button onclick="placeOrder()">Place Order</button>
+</div>
+
+<!-- CART -->
+<div class="cart" id="cart">
+  <h2>Your Cart</h2>
+  <ul id="cart-items"></ul>
+  <p>Total: ₹<span id="total">0</span></p>
+</div>
+
+<script>
+const products = [
+  { id: 1, name: "Shoes", price: 1000, img: "https://www.google.com/imgres?q=nike%20shoes&imgurl=https%3A%2F%2Fs.yimg.com%2Fny%2Fapi%2Fres%2F1.2%2F2T7TPb9lq0Y.bsfobJ8QRw--%2FYXBwaWQ9aGlnaGxhbmRlcjt3PTk2MDtoPTY1MQ--%2Fhttps%3A%2F%2Fo.aolcdn.com%2Fimages%2Fdims%3Fresize%3D2000%252C2000%252Cshrink%26image_uri%3Dhttps%253A%252F%252Fs.yimg.com%252Fos%252Fcreatr-uploaded-images%252F2018-12%252F4830f030-04d6-11e9-9efb-324de7e29ad5%26client%3Da1acac3e1b3290917d92%26signature%3Db6d816abc2c61973b8e76c036d99c0448c32a1f6&imgrefurl=https%3A%2F%2Fwww.engadget.com%2F2018-12-20-nike-self-lacing-basketball.html&docid=nJlWfik6RL2mYM&tbnid=5dVn9B7s9JlpVM&vet=12ahUKEwjG76OOu-2TAxU_aHADHRE-JaAQnPAOegQIexAB..i&w=960&h=651&hcb=2&ved=2ahUKEwjG76OOu-2TAxU_aHADHRE-JaAQnPAOegQIexAB" },
+  { id: 2, name: "Shirt", price: 500, img: "data:image/jpeg;base64,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" },
+  { id: 3, name: "Watch", price: 1500, img: "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRgvckDdZm3gTU-Hfo24-pJejt5yVv9oIrZ9duTNEV8LOqKcNDDj64CInWOkmbLVeglCGc70A9WDerK4nsEK-OAMlc4NIKLwld7u5xFzej4lZ86qrACxVo" }
+];
+
+let cart = [];
+let loggedIn = false;
+
+function login() {
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+
+  if(user && pass) {
+    loggedIn = true;
+    document.getElementById("login-page").classList.add("hidden");
+    document.getElementById("shop-page").classList.remove("hidden");
+  } else {
+    alert("Enter valid details");
+  }
+}
+
+function logout() {
+  loggedIn = false;
+  location.reload();
+}
+
+function showPage(page) {
+  if(!loggedIn) return alert("Please login first");
+
+  document.getElementById("shop-page").classList.add("hidden");
+  document.getElementById("checkout-page").classList.add("hidden");
+
+  document.getElementById(page + "-page").classList.remove("hidden");
+
+  if(page === "checkout") updateCheckout();
+}
+
+function displayProducts() {
+  const list = document.getElementById("product-list");
+
+  products.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "product";
+    div.innerHTML = `
+      <img src="${p.img}">
+      <h3>${p.name}</h3>
+      <p>₹${p.price}</p>
+      <button onclick="addToCart(${p.id})">Add</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function addToCart(id) {
+  const product = products.find(p => p.id === id);
+  cart.push(product);
+  updateCart();
+}
+
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  updateCart();
+}
+
+function updateCart() {
+  const cartItems = document.getElementById("cart-items");
+  const totalDisplay = document.getElementById("total");
+  const cartCount = document.getElementById("cart-count");
+
+  cartItems.innerHTML = "";
+  let total = 0;
+
+  cart.forEach((item, index) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      ${item.name} - ₹${item.price}
+      <button onclick="removeFromCart(${index})">X</button>
+    `;
+    cartItems.appendChild(li);
+    total += item.price;
+  });
+
+  totalDisplay.textContent = total;
+  cartCount.textContent = cart.length;
+}
+
+function updateCheckout() {
+  const list = document.getElementById("checkout-items");
+  const totalDisplay = document.getElementById("checkout-total");
+
+  list.innerHTML = "";
+  let total = 0;
+
+  cart.forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = `${item.name} - ₹${item.price}`;
+    list.appendChild(li);
+    total += item.price;
+  });
+
+  totalDisplay.textContent = total;
+}
+
+function placeOrder() {
+  if(cart.length === 0) {
+    alert("Cart is empty!");
+    return;
+  }
+
+  alert("Order placed successfully!");
+  cart = [];
+  updateCart();
+  updateCheckout();
+}
+
+function toggleCart() {
+  const cartDiv = document.getElementById("cart");
+  cartDiv.style.display =
+    cartDiv.style.display === "block" ? "none" : "block";
+}
+
+displayProducts();
+</script>
+
+</body>
+</html>
