@@ -1,0 +1,87 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing:content-box;
+  font-family: "Arial", sans-serif;
+}
+
+.body {
+  background: radial-gradient(circle at center, #1a1a1a, #000);
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  background-color: #2d2d2d;
+  color: white;
+  text-align: center;
+  justify-content: center;
+  width: 320px;
+  border-radius: 20px;
+  padding: 30px 20px;
+  box-shadow: 0 0 50px 10px rgb(255, 0, 0, 0.4);
+  position: relative;
+}
+
+.profile-pic {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit:contain 80px;
+  border: 3px solid #ffeb3b;
+  margin-top: 70px;
+  background-color: #1c1c1c;
+}
+
+h2 {
+  margin-top: 15px;
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+.title {
+  display: inline-block;
+  margin-top: 8px;
+  background-color: #1c1c1c;
+  padding: 6px 12px;
+  border-radius: 10px;
+  color: #ffeb3b;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.info {
+  margin: 20px 0;
+  border-top: 1px solid #666;
+  border-bottom: 1px solid #666;
+  padding: 15px 0;
+  text-align: center;
+  font-size: 0.9em;
+}
+
+.info p {
+  margin: 10px 0;
+  color: #d3d3d3;
+}
+
+.info a {
+  color: #ffeb3b;
+  text-decoration: none;
+}
+
+.socials {
+  margin-top: 10px;
+}
+
+.socials a {
+  color: white;
+  font-size: 1.3em;
+  margin: 0 10px;
+  transition: 0.3s;
+}
+
+.socials a:hover {
+  color: #ffeb3b;
+}
