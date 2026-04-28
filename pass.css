@@ -1,0 +1,96 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: #4b2bbf;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+h1 {
+    color: #ffcc4d;
+    margin-top: 40px;
+    font-size: 40px;
+}
+
+.container {
+    width: 350px;
+    padding: 25px;
+    background: rgba(0, 0, 0, 0.7);
+    margin: 50px auto;
+    border-radius: 15px;
+    color: #fff;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.container h2 {
+    color: #aaa;
+}
+
+.inputArea {
+    position: relative;
+    margin-top: 20px;
+}
+
+.inputArea input {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    outline: none;
+    background: #222;
+    color: #fff;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.show {
+    position: absolute;
+    right: 10px;
+    top: 12px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #ccc;
+}
+
+.strengthMeter {
+    height: 10px;
+    background: #111;
+    margin-top: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+.strengthMeter::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transition: 0.4s;
+}
+
+/* Weak */
+.container.weak .strengthMeter::before {
+    width: 30%;
+    background: red;
+    box-shadow: 0 0 10px red, 0 0 20px red;
+}
+
+/* Moderate */
+.container.moderate .strengthMeter::before {
+    width: 70%;
+    background: orange;
+    box-shadow: 0 0 10px orange, 0 0 20px orange;
+}
+
+/* Strong */
+.container.strong .strengthMeter::before {
+    width: 100%;
+    background: lime;
+    box-shadow: 0 0 10px lime, 0 0 20px lime;
+}
+
+#message {
+    margin-top: 10px;
+    font-size: 14px;
+}
