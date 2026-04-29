@@ -1,0 +1,2566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VaultAuth — Secure Authentication Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07090d;
+  --surface: #0d1117;
+  --surface2: #131c27;
+  --surface3: #1a2535;
+  --border: #1e2d3d;
+  --border2: #243447;
+  --amber: #f59e0b;
+  --amber-dim: #b45309;
+  --amber-glow: rgba(245,158,11,0.15);
+  --teal: #2dd4bf;
+  --teal-dim: #0d9488;
+  --red: #ef4444;
+  --green: #22c55e;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --text-muted: #475569;
+  --font: 'Sora', sans-serif;
+  --mono: 'Fira Code', monospace;
+  --serif: 'Playfair Display', serif;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 0 0 1px var(--border), 0 8px 32px rgba(0,0,0,0.6);
+  --shadow-amber: 0 0 20px rgba(245,158,11,0.2);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ─── TYPOGRAPHY ─── */
+h1, h2, h3, h4 { line-height: 1.2; }
+
+/* ─── LOADING SCREEN ─── */
+#loading-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 20px;
+  transition: opacity 0.5s ease;
+}
+.loading-logo {
+  font-family: var(--serif);
+  font-size: 36px;
+  color: var(--amber);
+  letter-spacing: -1px;
+}
+.loading-bar {
+  width: 200px; height: 2px;
+  background: var(--border2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.loading-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber), var(--teal));
+  border-radius: 99px;
+  animation: loadFill 1.2s ease forwards;
+}
+@keyframes loadFill { from{width:0} to{width:100%} }
+.loading-text {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ─── VIEWS ─── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ─── AUTH VIEW ─── */
+#auth-view {
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+.auth-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 50%, rgba(245,158,11,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 80%, rgba(45,212,191,0.05) 0%, transparent 60%);
+}
+.auth-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.3;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 80%);
+}
+
+.auth-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 60px;
+}
+.brand-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--amber), var(--amber-dim));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.brand-name {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.auth-headline {
+  font-family: var(--serif);
+  font-size: clamp(36px, 4vw, 52px);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+.auth-headline em {
+  font-style: italic;
+  color: var(--amber);
+}
+.auth-sub {
+  font-size: 15px;
+  color: var(--text-dim);
+  max-width: 400px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+}
+.auth-features {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.auth-feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+.auth-feature-dot {
+  width: 8px; height: 8px;
+  background: var(--amber);
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px var(--amber);
+}
+
+.auth-right {
+  width: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-card {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(245,158,11,0.05);
+  animation: cardIn 0.5s cubic-bezier(0.2, 0, 0, 1) forwards;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+.auth-tabs {
+  display: flex;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 32px;
+  border: 1px solid var(--border);
+}
+.auth-tab {
+  flex: 1;
+  padding: 9px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+  font-family: var(--font);
+}
+.auth-tab.active {
+  background: var(--surface3);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+.auth-form-panel { display: none; }
+.auth-form-panel.active { display: block; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.form-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.form-subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 28px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.form-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  transition: all 0.2s;
+  outline: none;
+}
+.form-input:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+  background: var(--surface2);
+}
+.form-input::placeholder { color: var(--text-muted); }
+.form-input.error { border-color: var(--red); }
+
+.input-wrapper {
+  position: relative;
+}
+.input-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  transition: color 0.2s;
+}
+.input-icon:hover { color: var(--text-dim); }
+
+/* ─── PASSWORD STRENGTH ─── */
+.pw-strength {
+  margin-top: 8px;
+}
+.pw-bars {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.pw-bar {
+  height: 3px;
+  flex: 1;
+  background: var(--border2);
+  border-radius: 99px;
+  transition: background 0.3s;
+}
+.pw-bar.filled-weak   { background: var(--red); }
+.pw-bar.filled-fair   { background: #f97316; }
+.pw-bar.filled-good   { background: #eab308; }
+.pw-bar.filled-strong { background: var(--green); }
+.pw-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+
+/* ─── FORM ERROR ─── */
+.form-error {
+  font-size: 11px;
+  color: var(--red);
+  margin-top: 5px;
+  display: none;
+}
+.form-error.visible { display: block; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--amber), #d97706);
+  color: #000;
+  box-shadow: 0 4px 14px rgba(245,158,11,0.3);
+  width: 100%;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(245,158,11,0.4);
+}
+.btn-primary:active { transform: none; }
+.btn-secondary {
+  background: var(--surface3);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+.btn-secondary:hover { background: var(--border2); border-color: var(--amber); color: var(--amber); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-dim);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.btn-ghost:hover { background: var(--surface3); color: var(--text); }
+.btn-danger {
+  background: rgba(239,68,68,0.1);
+  color: var(--red);
+  border: 1px solid rgba(239,68,68,0.2);
+}
+.btn-danger:hover { background: rgba(239,68,68,0.2); }
+.btn-sm { padding: 7px 14px; font-size: 12px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+.btn-loading::after {
+  content: '';
+  width: 14px; height: 14px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.form-link {
+  color: var(--amber);
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+  transition: opacity 0.2s;
+}
+.form-link:hover { opacity: 0.8; text-decoration: underline; }
+
+.form-footer {
+  text-align: center;
+  margin-top: 20px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+/* ─── 2FA VIEW ─── */
+#twofa-view {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.twofa-card {
+  width: 440px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px 40px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  animation: cardIn 0.4s ease;
+  position: relative;
+  z-index: 1;
+}
+.twofa-icon {
+  width: 72px; height: 72px;
+  background: var(--amber-glow);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  margin: 0 auto 24px;
+}
+.twofa-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.twofa-sub { color: var(--text-dim); font-size: 13px; line-height: 1.6; margin-bottom: 32px; }
+.otp-inputs {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.otp-input {
+  width: 52px; height: 60px;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 22px;
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--text);
+  outline: none;
+  transition: all 0.2s;
+}
+.otp-input:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px var(--amber-glow);
+  background: var(--surface2);
+}
+
+/* ─── DASHBOARD ─── */
+#dashboard-view {
+  display: none;
+  min-height: 100vh;
+  background: var(--bg);
+}
+#dashboard-view.active { display: flex; }
+
+.sidebar {
+  width: 260px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.sidebar-header {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-brand-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--amber), #d97706);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.sidebar-brand-name {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.sidebar-user {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.user-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--amber), var(--teal));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #000;
+  flex-shrink: 0;
+}
+.user-info { flex: 1; overflow: hidden; }
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user-role {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+  background: none;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active {
+  background: var(--amber-glow);
+  color: var(--amber);
+  border: 1px solid rgba(245,158,11,0.15);
+}
+.nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 99px;
+}
+
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* ─── MAIN CONTENT ─── */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.page-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+.page-breadcrumb {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.content-area {
+  padding: 32px;
+  flex: 1;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeUp 0.3s ease; }
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.card-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.card-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.card-body { padding: 24px; }
+
+/* ─── STATS GRID ─── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.stat-card:hover { border-color: var(--border2); }
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.stat-amber::before { background: var(--amber); }
+.stat-teal::before  { background: var(--teal); }
+.stat-green::before { background: var(--green); }
+.stat-red::before   { background: var(--red); }
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 6px;
+  font-family: var(--mono);
+}
+.stat-change {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.stat-icon {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  font-size: 24px;
+  opacity: 0.2;
+}
+
+/* ─── TABLES ─── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-dim);
+  vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover td { background: var(--surface2); }
+.data-table td.text-mono { font-family: var(--mono); font-size: 12px; }
+
+/* ─── BADGES ─── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.badge-green  { background: rgba(34,197,94,0.12);  color: var(--green);  border: 1px solid rgba(34,197,94,0.2); }
+.badge-red    { background: rgba(239,68,68,0.12);   color: var(--red);    border: 1px solid rgba(239,68,68,0.2); }
+.badge-amber  { background: var(--amber-glow);      color: var(--amber);  border: 1px solid rgba(245,158,11,0.2); }
+.badge-teal   { background: rgba(45,212,191,0.1);   color: var(--teal);   border: 1px solid rgba(45,212,191,0.2); }
+.badge-muted  { background: var(--surface3);        color: var(--text-dim);border: 1px solid var(--border); }
+.badge::before { content: '●'; font-size: 8px; }
+
+/* ─── SESSION CARDS ─── */
+.sessions-list { display: flex; flex-direction: column; gap: 12px; }
+.session-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: border-color 0.2s;
+}
+.session-card:hover { border-color: var(--border2); }
+.session-card.current { border-color: rgba(245,158,11,0.3); background: var(--amber-glow); }
+.session-device-icon {
+  width: 44px; height: 44px;
+  background: var(--surface2);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.session-info { flex: 1; }
+.session-device { font-size: 13px; font-weight: 600; color: var(--text); }
+.session-meta { font-size: 11px; color: var(--text-muted); font-family: var(--mono); margin-top: 3px; }
+.session-current-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--amber);
+  background: var(--amber-glow);
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid rgba(245,158,11,0.2);
+  margin-left: 8px;
+}
+
+/* ─── AUDIT LOG ─── */
+.audit-list { display: flex; flex-direction: column; }
+.audit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.audit-item:last-child { border-bottom: none; }
+.audit-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.audit-dot-green  { background: var(--green);  box-shadow: 0 0 6px var(--green); }
+.audit-dot-amber  { background: var(--amber);  box-shadow: 0 0 6px var(--amber); }
+.audit-dot-red    { background: var(--red);    box-shadow: 0 0 6px var(--red); }
+.audit-dot-teal   { background: var(--teal);   box-shadow: 0 0 6px var(--teal); }
+.audit-content { flex: 1; }
+.audit-action { font-size: 13px; font-weight: 500; color: var(--text); }
+.audit-detail { font-size: 11px; color: var(--text-muted); font-family: var(--mono); margin-top: 2px; }
+.audit-time { font-size: 11px; color: var(--text-muted); font-family: var(--mono); flex-shrink: 0; }
+
+/* ─── SECURITY SETTINGS ─── */
+.security-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+.security-item:last-child { border-bottom: none; }
+.security-item-info { flex: 1; }
+.security-item-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.security-item-desc { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+/* ─── TOGGLE ─── */
+.toggle {
+  position: relative;
+  width: 44px; height: 24px;
+  cursor: pointer;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute; inset: 0;
+  background: var(--border2);
+  border-radius: 12px;
+  transition: background 0.25s;
+}
+.toggle input:checked + .toggle-track { background: var(--amber); }
+.toggle-thumb {
+  position: absolute;
+  width: 18px; height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
+
+/* ─── PROFILE FORM ─── */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.profile-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.profile-avatar-large {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--amber), var(--teal));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  font-weight: 800;
+  color: #000;
+  flex-shrink: 0;
+}
+.profile-avatar-info { flex: 1; }
+.profile-avatar-name { font-size: 18px; font-weight: 700; color: var(--text); }
+.profile-avatar-email { font-size: 13px; color: var(--text-muted); font-family: var(--mono); margin-top: 3px; }
+
+/* ─── TOAST ─── */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  font-size: 13px;
+  color: var(--text);
+  min-width: 280px;
+  pointer-events: all;
+  animation: toastIn 0.35s cubic-bezier(0.2,0,0,1) forwards;
+}
+.toast.removing { animation: toastOut 0.25s ease forwards; }
+@keyframes toastIn  { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: none; } }
+@keyframes toastOut { from { opacity:1; transform: none; } to { opacity:0; transform: translateX(20px); } }
+.toast-icon { font-size: 18px; }
+.toast-text { flex: 1; }
+.toast-success .toast-icon::before { content: '✓'; color: var(--green); font-weight: 700; }
+.toast-error   .toast-icon::before { content: '✕'; color: var(--red); font-weight: 700; }
+.toast-info    .toast-icon::before { content: 'ℹ'; color: var(--teal); font-weight: 700; }
+.toast-warning .toast-icon::before { content: '⚠'; color: var(--amber); font-weight: 700; }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+  animation: cardIn 0.25s ease;
+}
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+/* ─── ADMIN ─── */
+.admin-header {
+  background: linear-gradient(135deg, rgba(245,158,11,0.08), transparent);
+  border-bottom: 1px solid rgba(245,158,11,0.15);
+  padding: 12px 24px;
+  font-size: 11px;
+  color: var(--amber);
+  font-family: var(--mono);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── MISC ─── */
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.section-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-gap { display: flex; align-items: center; gap: 10px; }
+.text-amber { color: var(--amber); }
+.text-mono { font-family: var(--mono); }
+.text-sm { font-size: 12px; }
+.text-muted { color: var(--text-muted); }
+.fw-600 { font-weight: 600; }
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state-text { font-size: 14px; }
+
+.qr-mock {
+  width: 120px; height: 120px;
+  background: white;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 20px auto;
+}
+.qr-inner {
+  width: 100%; height: 100%;
+  background:
+    repeating-linear-gradient(0deg, #000 0, #000 2px, transparent 2px, transparent 6px),
+    repeating-linear-gradient(90deg, #000 0, #000 2px, transparent 2px, transparent 6px);
+  opacity: 0.85;
+}
+
+@media (max-width: 1024px) {
+  .auth-left { display: none; }
+  .auth-right { width: 100%; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .sidebar { width: 220px; }
+  .content-area { padding: 20px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .profile-grid { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+  <div class="loading-logo">VaultAuth</div>
+  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  <div class="loading-text">Initializing secure environment</div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- ═══════════════════════════════════════════
+     AUTH VIEW
+═══════════════════════════════════════════ -->
+<div id="auth-view" class="view">
+  <div class="auth-bg"></div>
+  <div class="auth-grid"></div>
+
+  <div class="auth-left">
+    <div class="brand-mark">
+      <div class="brand-icon">🔐</div>
+      <div class="brand-name">VaultAuth</div>
+    </div>
+    <h1 class="auth-headline">
+      Authentication<br>built for the<br><em>modern web.</em>
+    </h1>
+    <p class="auth-sub">
+      Enterprise-grade authentication & security infrastructure. Protect your users with multi-factor authentication, session management, and real-time threat detection.
+    </p>
+    <div class="auth-features">
+      <div class="auth-feature"><div class="auth-feature-dot"></div>Zero-knowledge password architecture</div>
+      <div class="auth-feature"><div class="auth-feature-dot"></div>TOTP two-factor authentication</div>
+      <div class="auth-feature"><div class="auth-feature-dot"></div>Real-time session monitoring & control</div>
+      <div class="auth-feature"><div class="auth-feature-dot"></div>Complete audit trail & compliance logs</div>
+      <div class="auth-feature"><div class="auth-feature-dot"></div>Role-based access control (RBAC)</div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('signin')">Sign In</button>
+        <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- SIGN IN -->
+      <div id="signin-panel" class="auth-form-panel active">
+        <div class="form-title">Welcome back</div>
+        <div class="form-subtitle">Sign in to your VaultAuth account</div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="signin-email" class="form-input" placeholder="you@example.com">
+          <div class="form-error" id="signin-email-err">Please enter a valid email.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="signin-password" class="form-input" placeholder="Your password">
+            <span class="input-icon" onclick="togglePw('signin-password', this)">👁</span>
+          </div>
+          <div class="form-error" id="signin-pass-err">Incorrect email or password.</div>
+        </div>
+        <div style="text-align:right; margin:-8px 0 16px">
+          <span class="form-link" onclick="showForgotPassword()">Forgot password?</span>
+        </div>
+        <button class="btn btn-primary" id="signin-btn" onclick="handleSignIn()">
+          Sign In Securely
+        </button>
+        <div style="margin-top:14px; padding:12px 16px; background:var(--surface2); border-radius:8px; border:1px solid var(--border);">
+          <div style="font-size:11px; color:var(--text-muted); font-family:var(--mono); margin-bottom:6px;">DEMO CREDENTIALS</div>
+          <div style="font-size:12px; color:var(--text-dim);">Admin: <span class="text-amber text-mono">admin@vaultauth.com</span> / <span class="text-amber text-mono">Admin@123</span></div>
+          <div style="font-size:12px; color:var(--text-dim); margin-top:4px;">User: <span class="text-amber text-mono">user@test.com</span> / <span class="text-amber text-mono">User@1234</span></div>
+        </div>
+      </div>
+
+      <!-- SIGN UP -->
+      <div id="signup-panel" class="auth-form-panel">
+        <div class="form-title">Create an account</div>
+        <div class="form-subtitle">Join thousands of developers building securely</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input type="text" id="signup-fname" class="form-input" placeholder="John">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" id="signup-lname" class="form-input" placeholder="Doe">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="signup-email" class="form-input" placeholder="you@example.com">
+          <div class="form-error" id="signup-email-err">Email already in use.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="signup-password" class="form-input" placeholder="Min 8 chars, mixed case + number" oninput="updatePwStrength(this.value)">
+            <span class="input-icon" onclick="togglePw('signup-password', this)">👁</span>
+          </div>
+          <div class="pw-strength">
+            <div class="pw-bars">
+              <div class="pw-bar" id="pw-bar-1"></div>
+              <div class="pw-bar" id="pw-bar-2"></div>
+              <div class="pw-bar" id="pw-bar-3"></div>
+              <div class="pw-bar" id="pw-bar-4"></div>
+            </div>
+            <div class="pw-label" id="pw-label">Password strength</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input type="password" id="signup-confirm" class="form-input" placeholder="Repeat your password">
+          <div class="form-error" id="signup-confirm-err">Passwords do not match.</div>
+        </div>
+        <button class="btn btn-primary" onclick="handleSignUp()">Create Account</button>
+      </div>
+
+      <!-- FORGOT PASSWORD -->
+      <div id="forgot-panel" class="auth-form-panel">
+        <button class="btn btn-ghost" onclick="switchAuthTab('signin')" style="margin-bottom:16px; padding-left:0">← Back to Sign In</button>
+        <div class="form-title">Reset Password</div>
+        <div class="form-subtitle">Enter your email and we'll send a reset link</div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="forgot-email" class="form-input" placeholder="you@example.com">
+        </div>
+        <button class="btn btn-primary" onclick="handleForgotPassword()">Send Reset Link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     2FA VIEW
+═══════════════════════════════════════════ -->
+<div id="twofa-view" class="view">
+  <div class="auth-bg"></div>
+  <div class="auth-grid"></div>
+  <div class="twofa-card">
+    <div class="twofa-icon">🔒</div>
+    <div class="twofa-title">Two-Factor Authentication</div>
+    <div class="twofa-sub" id="twofa-sub">Enter the 6-digit code from your authenticator app or use the demo code sent to your device.</div>
+    <div class="otp-inputs" id="otp-inputs">
+      <input type="text" class="otp-input" maxlength="1" oninput="otpInput(this,1)" onkeydown="otpKey(event,1)">
+      <input type="text" class="otp-input" maxlength="1" oninput="otpInput(this,2)" onkeydown="otpKey(event,2)">
+      <input type="text" class="otp-input" maxlength="1" oninput="otpInput(this,3)" onkeydown="otpKey(event,3)">
+      <input type="text" class="otp-input" maxlength="1" oninput="otpInput(this,4)" onkeydown="otpKey(event,4)">
+      <input type="text" class="otp-input" maxlength="1" oninput="otpInput(this,5)" onkeydown="otpKey(event,5)">
+      <input type="text" class="otp-input" maxlength="1" oninput="otpInput(this,6)" onkeydown="otpKey(event,6)">
+    </div>
+    <div id="twofa-demo-hint" style="font-size:12px; color:var(--amber); font-family:var(--mono); margin-bottom:16px;"></div>
+    <button class="btn btn-primary" onclick="verify2FA()" id="verify-btn">Verify Identity</button>
+    <div class="form-footer">
+      <span class="form-link" onclick="showView('auth')">← Use a different account</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DASHBOARD VIEW
+═══════════════════════════════════════════ -->
+<div id="dashboard-view" class="view">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">🔐</div>
+        <div class="sidebar-brand-name">VaultAuth</div>
+      </div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebar-avatar">VA</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-name">Loading...</div>
+        <div class="user-role" id="sidebar-role">user</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <button class="nav-item active" data-tab="overview" onclick="switchDashTab('overview', this)">
+        <span class="nav-icon">📊</span> Overview
+      </button>
+      <button class="nav-item" data-tab="profile" onclick="switchDashTab('profile', this)">
+        <span class="nav-icon">👤</span> Profile
+      </button>
+      <button class="nav-item" data-tab="security" onclick="switchDashTab('security', this)">
+        <span class="nav-icon">🛡️</span> Security
+      </button>
+
+      <div class="nav-section-label">Sessions & Logs</div>
+      <button class="nav-item" data-tab="sessions" onclick="switchDashTab('sessions', this)">
+        <span class="nav-icon">💻</span> Active Sessions
+      </button>
+      <button class="nav-item" data-tab="audit" onclick="switchDashTab('audit', this)">
+        <span class="nav-icon">📋</span> Audit Log
+      </button>
+
+      <div class="nav-section-label" id="admin-section-label" style="display:none">Admin</div>
+      <button class="nav-item" data-tab="admin" onclick="switchDashTab('admin', this)" id="admin-nav-btn" style="display:none">
+        <span class="nav-icon">⚙️</span> User Management
+        <span class="nav-badge" id="admin-badge">!</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn btn-ghost" style="width:100%; justify-content:flex-start" onclick="handleLogout()">
+        🚪 Sign Out
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="page-title" id="topbar-title">Overview</div>
+          <div class="page-breadcrumb" id="topbar-crumb">vaultauth / dashboard</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div id="topbar-2fa-badge" style="display:none">
+          <span class="badge badge-green">2FA Active</span>
+        </div>
+        <div id="topbar-role-badge"></div>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- ── OVERVIEW TAB ── -->
+      <div id="tab-overview" class="tab-panel active">
+        <div class="section-title" id="overview-greeting">Good morning!</div>
+        <div class="section-sub">Here's your security summary</div>
+
+        <div class="stats-grid">
+          <div class="stat-card stat-amber">
+            <div class="stat-icon">🔑</div>
+            <div class="stat-label">Active Sessions</div>
+            <div class="stat-value" id="stat-sessions">3</div>
+            <div class="stat-change">Across devices</div>
+          </div>
+          <div class="stat-card stat-green">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">Security Score</div>
+            <div class="stat-value" id="stat-score">72</div>
+            <div class="stat-change">out of 100</div>
+          </div>
+          <div class="stat-card stat-teal">
+            <div class="stat-icon">📅</div>
+            <div class="stat-label">Days Active</div>
+            <div class="stat-value" id="stat-days">1</div>
+            <div class="stat-change">Since joining</div>
+          </div>
+          <div class="stat-card stat-red">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-label">Failed Logins</div>
+            <div class="stat-value" id="stat-failed">0</div>
+            <div class="stat-change">Last 30 days</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Security Checklist</div>
+                <div class="card-subtitle">Improve your account security</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="security-checklist"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Recent Activity</div>
+                <div class="card-subtitle">Last 5 events</div>
+              </div>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div id="recent-activity-list" class="audit-list" style="padding:0 24px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PROFILE TAB ── -->
+      <div id="tab-profile" class="tab-panel">
+        <div class="section-title">Profile Settings</div>
+        <div class="section-sub">Manage your personal information</div>
+        <div class="card">
+          <div class="profile-avatar-section">
+            <div class="profile-avatar-large" id="profile-avatar-large">VA</div>
+            <div class="profile-avatar-info">
+              <div class="profile-avatar-name" id="profile-full-name">User</div>
+              <div class="profile-avatar-email" id="profile-email-display">email</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="showAvatarModal()">Change Avatar</button>
+          </div>
+          <div class="card-body">
+            <div class="profile-grid">
+              <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-input" id="profile-fname">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input type="text" class="form-input" id="profile-lname">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-input" id="profile-email">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Account ID</label>
+                <input type="text" class="form-input text-mono" id="profile-id" readonly style="opacity:0.6">
+              </div>
+            </div>
+            <div class="flex-gap" style="margin-top:8px">
+              <button class="btn btn-primary" style="width:auto" onclick="saveProfile()">Save Changes</button>
+              <button class="btn btn-secondary" onclick="loadProfileData()">Discard</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-24">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Account Information</div>
+              <div class="card-subtitle">Read-only metadata</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="grid-2">
+              <div>
+                <div class="text-muted text-sm" style="margin-bottom:4px">Created</div>
+                <div class="text-mono fw-600" id="profile-created">—</div>
+              </div>
+              <div>
+                <div class="text-muted text-sm" style="margin-bottom:4px">Last Login</div>
+                <div class="text-mono fw-600" id="profile-last-login">—</div>
+              </div>
+              <div>
+                <div class="text-muted text-sm" style="margin-bottom:4px">Role</div>
+                <div id="profile-role-badge"></div>
+              </div>
+              <div>
+                <div class="text-muted text-sm" style="margin-bottom:4px">Status</div>
+                <span class="badge badge-green">Active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECURITY TAB ── -->
+      <div id="tab-security" class="tab-panel">
+        <div class="section-title">Security Settings</div>
+        <div class="section-sub">Manage authentication and protection measures</div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Authentication</div></div>
+          <div class="card-body">
+            <div class="security-item">
+              <div class="security-item-info">
+                <div class="security-item-title">Two-Factor Authentication (2FA)</div>
+                <div class="security-item-desc">Add an extra layer of protection using TOTP authenticator app</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="2fa-toggle" onchange="toggle2FA(this)">
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+            <div class="security-item">
+              <div class="security-item-info">
+                <div class="security-item-title">Login Notifications</div>
+                <div class="security-item-desc">Receive alerts for new sign-ins to your account</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="login-notif-toggle" checked onchange="savePreference('loginNotif', this.checked)">
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+            <div class="security-item">
+              <div class="security-item-info">
+                <div class="security-item-title">Suspicious Activity Alerts</div>
+                <div class="security-item-desc">Get notified of unusual login patterns</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="suspic-toggle" checked onchange="savePreference('suspiciousAlert', this.checked)">
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-24">
+          <div class="card-header"><div class="card-title">Change Password</div></div>
+          <div class="card-body">
+            <div class="profile-grid">
+              <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" class="form-input" id="cur-password" placeholder="Current password">
+              </div>
+              <div></div>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" class="form-input" id="new-password" placeholder="New password" oninput="updatePwStrength2(this.value)">
+                <div class="pw-strength">
+                  <div class="pw-bars">
+                    <div class="pw-bar" id="pw2-bar-1"></div>
+                    <div class="pw-bar" id="pw2-bar-2"></div>
+                    <div class="pw-bar" id="pw2-bar-3"></div>
+                    <div class="pw-bar" id="pw2-bar-4"></div>
+                  </div>
+                  <div class="pw-label" id="pw2-label">Enter new password</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" class="form-input" id="confirm-new-password" placeholder="Confirm new password">
+              </div>
+            </div>
+            <button class="btn btn-secondary" style="width:auto" onclick="changePassword()">Update Password</button>
+          </div>
+        </div>
+
+        <div class="card mt-24" style="border-color: rgba(239,68,68,0.2)">
+          <div class="card-header" style="border-color:rgba(239,68,68,0.15)">
+            <div>
+              <div class="card-title" style="color:var(--red)">Danger Zone</div>
+              <div class="card-subtitle">Irreversible actions</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="security-item">
+              <div class="security-item-info">
+                <div class="security-item-title">Sign Out All Devices</div>
+                <div class="security-item-desc">Terminate all active sessions across all devices</div>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="signOutAllDevices()">Sign Out All</button>
+            </div>
+            <div class="security-item">
+              <div class="security-item-info">
+                <div class="security-item-title">Delete Account</div>
+                <div class="security-item-desc">Permanently delete your account and all data</div>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="showDeleteAccountModal()">Delete Account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SESSIONS TAB ── -->
+      <div id="tab-sessions" class="tab-panel">
+        <div class="flex-between" style="margin-bottom:24px">
+          <div>
+            <div class="section-title">Active Sessions</div>
+            <div class="section-sub">Manage your active sign-in sessions</div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="signOutAllDevices()">Revoke All</button>
+        </div>
+        <div id="sessions-list" class="sessions-list"></div>
+      </div>
+
+      <!-- ── AUDIT LOG TAB ── -->
+      <div id="tab-audit" class="tab-panel">
+        <div class="section-title">Audit Log</div>
+        <div class="section-sub">Complete history of security events</div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div id="audit-log-list" class="audit-list" style="padding:0 24px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ADMIN TAB ── -->
+      <div id="tab-admin" class="tab-panel">
+        <div class="admin-header">⚡ ADMIN CONSOLE — PRIVILEGED ACCESS</div>
+        <div class="section-title mt-16">User Management</div>
+        <div class="section-sub">Manage all registered users and their permissions</div>
+
+        <div class="stats-grid" id="admin-stats" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card stat-amber">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value" id="admin-stat-total">0</div>
+          </div>
+          <div class="stat-card stat-green">
+            <div class="stat-label">Active</div>
+            <div class="stat-value" id="admin-stat-active">0</div>
+          </div>
+          <div class="stat-card stat-red">
+            <div class="stat-label">Suspended</div>
+            <div class="stat-value" id="admin-stat-suspended">0</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">All Users</div>
+            <div class="flex-gap">
+              <input type="text" class="form-input" id="user-search" placeholder="Search users..." style="width:220px; padding:8px 12px;" oninput="filterUsers()">
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role</th>
+                  <th>2FA</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /main-content -->
+</div><!-- /dashboard-view -->
+
+<script>
+/* ═══════════════════════════════════════════
+   CONSTANTS & STATE
+═══════════════════════════════════════════ */
+const STORAGE_KEY = 'vaultauth_data';
+let currentUser = null;
+let pendingLoginUser = null;
+let currentTab = 'overview';
+
+/* ═══════════════════════════════════════════
+   CRYPTO UTILITIES
+═══════════════════════════════════════════ */
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + 'vaultauth_salt_2024');
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function generateId() {
+  return 'va_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+}
+
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/* ═══════════════════════════════════════════
+   STORAGE
+═══════════════════════════════════════════ */
+function getData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { users: [], auditLog: [], sessions: [] };
+  } catch { return { users: [], auditLog: [], sessions: [] }; }
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function addAuditLog(userId, action, details, type = 'info') {
+  const data = getData();
+  data.auditLog.unshift({
+    id: generateId(),
+    userId,
+    action,
+    details,
+    type,
+    ip: '192.168.' + Math.floor(Math.random()*255) + '.' + Math.floor(Math.random()*255),
+    timestamp: new Date().toISOString()
+  });
+  if (data.auditLog.length > 100) data.auditLog = data.auditLog.slice(0, 100);
+  saveData(data);
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+async function init() {
+  const data = getData();
+
+  // Seed default users if empty
+  if (data.users.length === 0) {
+    const adminHash = await hashPassword('Admin@123');
+    const userHash  = await hashPassword('User@1234');
+    data.users = [
+      {
+        id: generateId(),
+        firstName: 'Admin',
+        lastName: 'Vault',
+        email: 'admin@vaultauth.com',
+        password: adminHash,
+        role: 'admin',
+        twoFactorEnabled: false,
+        twoFactorCode: '',
+        status: 'active',
+        preferences: { loginNotif: true, suspiciousAlert: true },
+        createdAt: new Date().toISOString(),
+        lastLogin: null,
+        failedLogins: 0
+      },
+      {
+        id: generateId(),
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'user@test.com',
+        password: userHash,
+        role: 'user',
+        twoFactorEnabled: false,
+        twoFactorCode: '',
+        status: 'active',
+        preferences: { loginNotif: true, suspiciousAlert: true },
+        createdAt: new Date().toISOString(),
+        lastLogin: null,
+        failedLogins: 0
+      }
+    ];
+    data.sessions = [];
+    data.auditLog  = [];
+    saveData(data);
+    addAuditLog(data.users[0].id, 'System Initialized', 'VaultAuth platform seeded with default users', 'green');
+  }
+
+  // Hide loading screen
+  setTimeout(() => {
+    const ls = document.getElementById('loading-screen');
+    ls.style.opacity = '0';
+    setTimeout(() => { ls.style.display = 'none'; showView('auth'); }, 500);
+  }, 1400);
+}
+
+/* ═══════════════════════════════════════════
+   VIEW MANAGER
+═══════════════════════════════════════════ */
+function showView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById(view + '-view');
+  if (el) el.classList.add('active');
+}
+
+/* ═══════════════════════════════════════════
+   AUTH TAB SWITCHING
+═══════════════════════════════════════════ */
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-form-panel').forEach(p => p.classList.remove('active'));
+
+  if (tab === 'signin') {
+    document.querySelectorAll('.auth-tab')[0].classList.add('active');
+    document.getElementById('signin-panel').classList.add('active');
+  } else if (tab === 'signup') {
+    document.querySelectorAll('.auth-tab')[1].classList.add('active');
+    document.getElementById('signup-panel').classList.add('active');
+  } else if (tab === 'forgot') {
+    document.getElementById('forgot-panel').classList.add('active');
+  }
+}
+
+function showForgotPassword() {
+  document.querySelectorAll('.auth-form-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('forgot-panel').classList.add('active');
+}
+
+/* ═══════════════════════════════════════════
+   SIGN IN
+═══════════════════════════════════════════ */
+async function handleSignIn() {
+  const email    = document.getElementById('signin-email').value.trim();
+  const password = document.getElementById('signin-password').value;
+
+  hideError('signin-email-err');
+  hideError('signin-pass-err');
+
+  if (!email || !email.includes('@')) { showError('signin-email-err'); return; }
+  if (!password) { showError('signin-pass-err'); return; }
+
+  const btn = document.getElementById('signin-btn');
+  btn.classList.add('btn-loading');
+  btn.disabled = true;
+  btn.innerHTML = 'Authenticating...';
+
+  await sleep(800);
+
+  const data = getData();
+  const hash = await hashPassword(password);
+  const user = data.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+  if (!user || user.password !== hash) {
+    btn.classList.remove('btn-loading');
+    btn.disabled = false;
+    btn.innerHTML = 'Sign In Securely';
+    showError('signin-pass-err');
+    if (user) {
+      user.failedLogins = (user.failedLogins || 0) + 1;
+      addAuditLog(user.id, 'Failed Login Attempt', `Failed login from email: ${email}`, 'red');
+      saveData(data);
+      document.getElementById('stat-failed').textContent = user.failedLogins;
+    }
+    toast('Invalid email or password', 'error');
+    return;
+  }
+
+  if (user.status === 'suspended') {
+    btn.classList.remove('btn-loading');
+    btn.disabled = false;
+    btn.innerHTML = 'Sign In Securely';
+    toast('Your account has been suspended. Contact admin.', 'error');
+    return;
+  }
+
+  btn.classList.remove('btn-loading');
+  btn.disabled = false;
+  btn.innerHTML = 'Sign In Securely';
+
+  if (user.twoFactorEnabled) {
+    // Generate OTP and show 2FA screen
+    const otp = generateOTP();
+    user.twoFactorCode = otp;
+    saveData(data);
+    pendingLoginUser = user;
+    document.getElementById('twofa-demo-hint').textContent = `Demo OTP: ${otp}`;
+    showView('twofa');
+    clearOTP();
+  } else {
+    completeLogin(user);
+  }
+}
+
+function completeLogin(user) {
+  const data = getData();
+  user.lastLogin = new Date().toISOString();
+  user.failedLogins = 0;
+
+  // Add session
+  const session = {
+    id: generateId(),
+    userId: user.id,
+    device: getDeviceInfo(),
+    ip: '192.168.' + Math.floor(Math.random()*255) + '.' + Math.floor(Math.random()*255),
+    location: getRandomLocation(),
+    createdAt: new Date().toISOString(),
+    lastActive: new Date().toISOString(),
+    isCurrent: true
+  };
+
+  // Mark old sessions as not current
+  data.sessions = data.sessions.filter(s => s.userId !== user.id || !s.isCurrent);
+  data.sessions.push(session);
+
+  // Add fake sessions for demo
+  if (data.sessions.filter(s => s.userId === user.id).length < 2) {
+    const fakeDevices = ['iPhone 15 Pro · iOS 17', 'Windows PC · Chrome'];
+    fakeDevices.forEach((dev, i) => {
+      data.sessions.push({
+        id: generateId(),
+        userId: user.id,
+        device: dev,
+        ip: '10.0.' + Math.floor(Math.random()*255) + '.' + Math.floor(Math.random()*255),
+        location: getRandomLocation(),
+        createdAt: new Date(Date.now() - (i+1) * 86400000).toISOString(),
+        lastActive: new Date(Date.now() - (i+1) * 3600000).toISOString(),
+        isCurrent: false
+      });
+    });
+  }
+
+  const userIdx = data.users.findIndex(u => u.id === user.id);
+  if (userIdx >= 0) data.users[userIdx] = user;
+  saveData(data);
+
+  addAuditLog(user.id, 'Successful Login', `Signed in from ${session.device} · ${session.ip}`, 'green');
+  currentUser = data.users.find(u => u.id === user.id);
+  pendingLoginUser = null;
+  loadDashboard();
+  showView('dashboard');
+  toast(`Welcome back, ${user.firstName}! 👋`, 'success');
+}
+
+/* ═══════════════════════════════════════════
+   SIGN UP
+═══════════════════════════════════════════ */
+async function handleSignUp() {
+  const fname   = document.getElementById('signup-fname').value.trim();
+  const lname   = document.getElementById('signup-lname').value.trim();
+  const email   = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const confirm  = document.getElementById('signup-confirm').value;
+
+  hideError('signup-email-err');
+  hideError('signup-confirm-err');
+
+  if (!fname || !lname) { toast('Please enter your full name', 'error'); return; }
+  if (!email || !email.includes('@')) { toast('Please enter a valid email', 'error'); return; }
+
+  const data = getData();
+  if (data.users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+    showError('signup-email-err'); return;
+  }
+
+  const strength = getPasswordStrength(password);
+  if (strength < 2) { toast('Password too weak. Use 8+ chars with uppercase, number & symbol.', 'warning'); return; }
+
+  if (password !== confirm) { showError('signup-confirm-err'); return; }
+
+  const hash = await hashPassword(password);
+  const newUser = {
+    id: generateId(),
+    firstName: fname,
+    lastName: lname,
+    email,
+    password: hash,
+    role: 'user',
+    twoFactorEnabled: false,
+    twoFactorCode: '',
+    status: 'active',
+    preferences: { loginNotif: true, suspiciousAlert: true },
+    createdAt: new Date().toISOString(),
+    lastLogin: null,
+    failedLogins: 0
+  };
+
+  data.users.push(newUser);
+  saveData(data);
+  addAuditLog(newUser.id, 'Account Created', `New account registered for ${email}`, 'teal');
+  toast('Account created! Signing you in...', 'success');
+  await sleep(600);
+  completeLogin(newUser);
+}
+
+/* ═══════════════════════════════════════════
+   2FA VERIFICATION
+═══════════════════════════════════════════ */
+function verify2FA() {
+  const inputs = document.querySelectorAll('.otp-input');
+  const code = Array.from(inputs).map(i => i.value).join('');
+
+  if (code.length < 6) { toast('Please enter the 6-digit code', 'warning'); return; }
+
+  const data = getData();
+  const user = data.users.find(u => u.id === pendingLoginUser.id);
+
+  if (code === user.twoFactorCode) {
+    user.twoFactorCode = ''; // Clear used code
+    const idx = data.users.findIndex(u => u.id === user.id);
+    data.users[idx] = user;
+    saveData(data);
+    addAuditLog(user.id, '2FA Verified', 'Two-factor authentication passed', 'green');
+    completeLogin(user);
+  } else {
+    toast('Invalid code. Try again.', 'error');
+    inputs.forEach(i => { i.value = ''; i.style.borderColor = 'var(--red)'; });
+    inputs[0].focus();
+    setTimeout(() => inputs.forEach(i => i.style.borderColor = ''), 1500);
+  }
+}
+
+function otpInput(el, idx) {
+  el.value = el.value.replace(/[^0-9]/g, '');
+  if (el.value && idx < 6) {
+    document.querySelectorAll('.otp-input')[idx].focus();
+  }
+  if (idx === 6) {
+    const code = Array.from(document.querySelectorAll('.otp-input')).map(i => i.value).join('');
+    if (code.length === 6) setTimeout(verify2FA, 200);
+  }
+}
+
+function otpKey(e, idx) {
+  if (e.key === 'Backspace' && !e.target.value && idx > 1) {
+    document.querySelectorAll('.otp-input')[idx - 2].focus();
+  }
+}
+
+function clearOTP() {
+  document.querySelectorAll('.otp-input').forEach(i => { i.value = ''; i.style.borderColor = ''; });
+}
+
+/* ═══════════════════════════════════════════
+   FORGOT PASSWORD
+═══════════════════════════════════════════ */
+function handleForgotPassword() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email || !email.includes('@')) { toast('Enter a valid email address', 'error'); return; }
+  toast(`Reset link sent to ${email} (Demo mode)`, 'info');
+  addAuditLog('system', 'Password Reset Requested', `Reset link sent to ${email}`, 'amber');
+  setTimeout(() => switchAuthTab('signin'), 1500);
+}
+
+/* ═══════════════════════════════════════════
+   LOGOUT
+═══════════════════════════════════════════ */
+function handleLogout() {
+  const data = getData();
+  data.sessions = data.sessions.map(s => s.userId === currentUser.id && s.isCurrent ? {...s, isCurrent: false} : s);
+  saveData(data);
+  addAuditLog(currentUser.id, 'Signed Out', 'User signed out of current session', 'amber');
+  currentUser = null;
+  showView('auth');
+  switchAuthTab('signin');
+  toast('Signed out successfully', 'info');
+}
+
+/* ═══════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════ */
+function loadDashboard() {
+  const user = currentUser;
+  if (!user) return;
+
+  // Sidebar
+  document.getElementById('sidebar-avatar').textContent = getInitials(user);
+  document.getElementById('sidebar-name').textContent = user.firstName + ' ' + user.lastName;
+  document.getElementById('sidebar-role').textContent = user.role;
+
+  // Admin nav
+  if (user.role === 'admin') {
+    document.getElementById('admin-nav-btn').style.display = '';
+    document.getElementById('admin-section-label').style.display = '';
+    document.getElementById('topbar-role-badge').innerHTML = '<span class="badge badge-amber">Admin</span>';
+  } else {
+    document.getElementById('topbar-role-badge').innerHTML = '<span class="badge badge-teal">User</span>';
+  }
+
+  // 2FA badge
+  if (user.twoFactorEnabled) {
+    document.getElementById('topbar-2fa-badge').style.display = '';
+  }
+
+  loadOverview();
+  loadProfileData();
+  loadSessions();
+  loadAuditLog();
+  loadSecuritySettings();
+  if (user.role === 'admin') loadAdminPanel();
+}
+
+function switchDashTab(tab, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  currentTab = tab;
+
+  const titles = {
+    overview: ['Overview', 'vaultauth / dashboard'],
+    profile:  ['Profile Settings', 'vaultauth / profile'],
+    security: ['Security', 'vaultauth / security'],
+    sessions: ['Active Sessions', 'vaultauth / sessions'],
+    audit:    ['Audit Log', 'vaultauth / audit'],
+    admin:    ['User Management', 'vaultauth / admin']
+  };
+  if (titles[tab]) {
+    document.getElementById('topbar-title').textContent = titles[tab][0];
+    document.getElementById('topbar-crumb').textContent = titles[tab][1];
+  }
+}
+
+/* ─── OVERVIEW ─── */
+function loadOverview() {
+  const user = currentUser;
+  const data = getData();
+  const hr = new Date().getHours();
+  const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('overview-greeting').textContent = `${greet}, ${user.firstName}! 👋`;
+
+  const userSessions = data.sessions.filter(s => s.userId === user.id);
+  document.getElementById('stat-sessions').textContent = userSessions.length;
+  document.getElementById('stat-failed').textContent = user.failedLogins || 0;
+
+  // Days active
+  const created = new Date(user.createdAt);
+  const days = Math.max(1, Math.ceil((Date.now() - created) / 86400000));
+  document.getElementById('stat-days').textContent = days;
+
+  // Security score
+  let score = 40;
+  if (user.twoFactorEnabled) score += 30;
+  if (user.preferences?.loginNotif) score += 15;
+  if (user.preferences?.suspiciousAlert) score += 15;
+  document.getElementById('stat-score').textContent = score;
+
+  // Security checklist
+  const checks = [
+    { label: 'Email verified', done: true },
+    { label: '2FA enabled', done: user.twoFactorEnabled },
+    { label: 'Strong password set', done: true },
+    { label: 'Login notifications on', done: !!user.preferences?.loginNotif },
+    { label: 'Recovery email set', done: false },
+  ];
+  const checklistHtml = checks.map(c => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <span style="font-size:16px">${c.done ? '✅' : '⬜'}</span>
+      <span style="color:${c.done ? 'var(--text)' : 'var(--text-muted)'}">${c.label}</span>
+      ${!c.done ? '<span style="margin-left:auto;font-size:11px;color:var(--amber)">⚡ Recommended</span>' : ''}
+    </div>`).join('');
+  document.getElementById('security-checklist').innerHTML = checklistHtml;
+
+  // Recent activity
+  const recent = data.auditLog.filter(l => l.userId === user.id).slice(0, 5);
+  renderAuditItems('recent-activity-list', recent);
+}
+
+/* ─── PROFILE ─── */
+function loadProfileData() {
+  const u = currentUser;
+  document.getElementById('profile-fname').value = u.firstName;
+  document.getElementById('profile-lname').value = u.lastName;
+  document.getElementById('profile-email').value = u.email;
+  document.getElementById('profile-id').value = u.id;
+  document.getElementById('profile-avatar-large').textContent = getInitials(u);
+  document.getElementById('profile-full-name').textContent = u.firstName + ' ' + u.lastName;
+  document.getElementById('profile-email-display').textContent = u.email;
+  document.getElementById('profile-created').textContent = formatDate(u.createdAt);
+  document.getElementById('profile-last-login').textContent = u.lastLogin ? formatDate(u.lastLogin) : 'Just now';
+  document.getElementById('profile-role-badge').innerHTML = u.role === 'admin'
+    ? '<span class="badge badge-amber">Admin</span>'
+    : '<span class="badge badge-teal">User</span>';
+}
+
+function saveProfile() {
+  const fname = document.getElementById('profile-fname').value.trim();
+  const lname = document.getElementById('profile-lname').value.trim();
+  const email = document.getElementById('profile-email').value.trim();
+
+  if (!fname || !lname || !email) { toast('Please fill in all fields', 'error'); return; }
+
+  const data = getData();
+  const idx = data.users.findIndex(u => u.id === currentUser.id);
+  data.users[idx].firstName = fname;
+  data.users[idx].lastName  = lname;
+  data.users[idx].email     = email;
+  saveData(data);
+  currentUser = data.users[idx];
+
+  addAuditLog(currentUser.id, 'Profile Updated', 'User updated profile information', 'teal');
+  loadProfileData();
+  document.getElementById('sidebar-name').textContent = fname + ' ' + lname;
+  toast('Profile updated successfully', 'success');
+}
+
+/* ─── SECURITY SETTINGS ─── */
+function loadSecuritySettings() {
+  const u = currentUser;
+  document.getElementById('2fa-toggle').checked = !!u.twoFactorEnabled;
+  document.getElementById('login-notif-toggle').checked = u.preferences?.loginNotif !== false;
+  document.getElementById('suspic-toggle').checked = u.preferences?.suspiciousAlert !== false;
+}
+
+function toggle2FA(checkbox) {
+  if (checkbox.checked) {
+    show2FASetupModal();
+  } else {
+    disable2FA();
+  }
+}
+
+function show2FASetupModal() {
+  const otp = generateOTP();
+  const modal = createModal('Enable Two-Factor Authentication',
+    `<p style="color:var(--text-dim);font-size:13px;margin-bottom:20px">Scan the QR code with your authenticator app, then enter the 6-digit code to verify.</p>
+     <div class="qr-mock"><div class="qr-inner"></div></div>
+     <p style="text-align:center;font-size:12px;font-family:var(--mono);color:var(--text-muted);margin-bottom:4px">TOTP Secret</p>
+     <p style="text-align:center;font-size:13px;font-family:var(--mono);color:var(--amber);background:var(--bg);padding:8px;border-radius:6px;letter-spacing:2px;margin-bottom:16px">VAULT${Math.random().toString(36).toUpperCase().substr(2,16)}</p>
+     <p style="text-align:center;font-size:12px;color:var(--amber);font-family:var(--mono);margin-bottom:16px">Demo code: <strong>${otp}</strong></p>
+     <div class="otp-inputs" id="setup-otp-inputs">
+       ${[1,2,3,4,5,6].map(i => `<input type="text" class="otp-input" maxlength="1" id="setup-otp-${i}" oninput="setupOtpInput(this,${i})" onkeydown="setupOtpKey(event,${i})">`).join('')}
+     </div>`,
+    [
+      { label: 'Cancel', class: 'btn-secondary', action: () => { document.getElementById('2fa-toggle').checked = false; closeModal(); } },
+      { label: 'Enable 2FA', class: 'btn-primary', action: () => confirm2FASetup(otp) }
+    ]
+  );
+  document.body.appendChild(modal);
+}
+
+function setupOtpInput(el, idx) {
+  el.value = el.value.replace(/[^0-9]/g,'');
+  if (el.value && idx < 6) document.getElementById('setup-otp-' + (idx+1))?.focus();
+}
+function setupOtpKey(e, idx) {
+  if (e.key === 'Backspace' && !e.target.value && idx > 1) document.getElementById('setup-otp-' + (idx-1))?.focus();
+}
+
+function confirm2FASetup(expectedOtp) {
+  const code = [1,2,3,4,5,6].map(i => document.getElementById('setup-otp-' + i)?.value || '').join('');
+  if (code !== expectedOtp) { toast('Incorrect code. Try again.', 'error'); return; }
+
+  const data = getData();
+  const idx = data.users.findIndex(u => u.id === currentUser.id);
+  data.users[idx].twoFactorEnabled = true;
+  saveData(data);
+  currentUser = data.users[idx];
+
+  addAuditLog(currentUser.id, '2FA Enabled', 'Two-factor authentication was enabled', 'green');
+  document.getElementById('topbar-2fa-badge').style.display = '';
+  closeModal();
+  toast('2FA enabled! Your account is now more secure 🛡️', 'success');
+  loadOverview();
+}
+
+function disable2FA() {
+  const data = getData();
+  const idx = data.users.findIndex(u => u.id === currentUser.id);
+  data.users[idx].twoFactorEnabled = false;
+  saveData(data);
+  currentUser = data.users[idx];
+  addAuditLog(currentUser.id, '2FA Disabled', 'Two-factor authentication was disabled', 'amber');
+  document.getElementById('topbar-2fa-badge').style.display = 'none';
+  toast('2FA disabled. We recommend keeping it on.', 'warning');
+  loadOverview();
+}
+
+function savePreference(key, value) {
+  const data = getData();
+  const idx = data.users.findIndex(u => u.id === currentUser.id);
+  if (!data.users[idx].preferences) data.users[idx].preferences = {};
+  data.users[idx].preferences[key] = value;
+  saveData(data);
+  currentUser = data.users[idx];
+  toast('Preference saved', 'success');
+}
+
+async function changePassword() {
+  const cur = document.getElementById('cur-password').value;
+  const nw  = document.getElementById('new-password').value;
+  const cfm = document.getElementById('confirm-new-password').value;
+
+  if (!cur || !nw || !cfm) { toast('Please fill all fields', 'error'); return; }
+  if (nw !== cfm) { toast('New passwords do not match', 'error'); return; }
+  if (getPasswordStrength(nw) < 2) { toast('New password is too weak', 'warning'); return; }
+
+  const data = getData();
+  const user = data.users.find(u => u.id === currentUser.id);
+  const curHash = await hashPassword(cur);
+  if (user.password !== curHash) { toast('Current password is incorrect', 'error'); return; }
+
+  const newHash = await hashPassword(nw);
+  const idx = data.users.findIndex(u => u.id === currentUser.id);
+  data.users[idx].password = newHash;
+  saveData(data);
+  currentUser = data.users[idx];
+
+  document.getElementById('cur-password').value = '';
+  document.getElementById('new-password').value = '';
+  document.getElementById('confirm-new-password').value = '';
+  addAuditLog(currentUser.id, 'Password Changed', 'Account password was updated', 'green');
+  toast('Password updated successfully', 'success');
+}
+
+function signOutAllDevices() {
+  const data = getData();
+  data.sessions = data.sessions.filter(s => s.userId !== currentUser.id);
+  saveData(data);
+  addAuditLog(currentUser.id, 'All Sessions Revoked', 'User signed out of all devices', 'amber');
+  toast('All sessions terminated', 'info');
+  loadSessions();
+  loadOverview();
+}
+
+function showDeleteAccountModal() {
+  const modal = createModal('Delete Account',
+    `<p style="color:var(--text-dim);font-size:13px;margin-bottom:16px">This action is <strong style="color:var(--red)">permanent and irreversible</strong>. All your data will be deleted.</p>
+     <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Type <code style="color:var(--red);font-family:var(--mono)">DELETE</code> to confirm:</p>
+     <input type="text" class="form-input" id="delete-confirm-input" placeholder="Type DELETE">`,
+    [
+      { label: 'Cancel', class: 'btn-secondary', action: closeModal },
+      { label: 'Delete My Account', class: 'btn-danger', action: deleteAccount }
+    ]
+  );
+  document.body.appendChild(modal);
+}
+
+function deleteAccount() {
+  const val = document.getElementById('delete-confirm-input')?.value;
+  if (val !== 'DELETE') { toast('Please type DELETE to confirm', 'error'); return; }
+  const data = getData();
+  data.users = data.users.filter(u => u.id !== currentUser.id);
+  data.sessions = data.sessions.filter(s => s.userId !== currentUser.id);
+  saveData(data);
+  closeModal();
+  currentUser = null;
+  showView('auth');
+  toast('Account deleted. Goodbye!', 'info');
+}
+
+/* ─── SESSIONS ─── */
+function loadSessions() {
+  const data = getData();
+  const sessions = data.sessions.filter(s => s.userId === currentUser.id);
+  const container = document.getElementById('sessions-list');
+
+  if (sessions.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💻</div><div class="empty-state-text">No active sessions</div></div>';
+    return;
+  }
+
+  container.innerHTML = sessions.map(s => `
+    <div class="session-card ${s.isCurrent ? 'current' : ''}">
+      <div class="session-device-icon">${getDeviceIcon(s.device)}</div>
+      <div class="session-info">
+        <div class="session-device">
+          ${s.device}
+          ${s.isCurrent ? '<span class="session-current-badge">Current</span>' : ''}
+        </div>
+        <div class="session-meta">${s.ip} · ${s.location} · ${timeAgo(s.lastActive)}</div>
+      </div>
+      ${!s.isCurrent ? `<button class="btn btn-danger btn-sm" onclick="revokeSession('${s.id}')">Revoke</button>` : ''}
+    </div>`).join('');
+}
+
+function revokeSession(sessionId) {
+  const data = getData();
+  data.sessions = data.sessions.filter(s => s.id !== sessionId);
+  saveData(data);
+  addAuditLog(currentUser.id, 'Session Revoked', `Session ${sessionId.slice(0,10)}... terminated`, 'amber');
+  loadSessions();
+  loadOverview();
+  toast('Session terminated', 'info');
+}
+
+/* ─── AUDIT LOG ─── */
+function loadAuditLog() {
+  const data = getData();
+  const logs = data.auditLog.filter(l => l.userId === currentUser.id);
+  renderAuditItems('audit-log-list', logs);
+}
+
+function renderAuditItems(containerId, logs) {
+  const container = document.getElementById(containerId);
+  if (!logs || logs.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">No events yet</div></div>';
+    return;
+  }
+  const typeColors = { green: 'green', teal: 'teal', amber: 'amber', red: 'red', info: 'teal' };
+  container.innerHTML = logs.map(l => `
+    <div class="audit-item">
+      <div class="audit-dot audit-dot-${typeColors[l.type] || 'teal'}"></div>
+      <div class="audit-content">
+        <div class="audit-action">${l.action}</div>
+        <div class="audit-detail">${l.details} · ${l.ip}</div>
+      </div>
+      <div class="audit-time">${timeAgo(l.timestamp)}</div>
+    </div>`).join('');
+}
+
+/* ─── ADMIN PANEL ─── */
+function loadAdminPanel() {
+  if (currentUser?.role !== 'admin') return;
+  const data = getData();
+
+  document.getElementById('admin-stat-total').textContent = data.users.length;
+  document.getElementById('admin-stat-active').textContent = data.users.filter(u => u.status === 'active').length;
+  document.getElementById('admin-stat-suspended').textContent = data.users.filter(u => u.status === 'suspended').length;
+
+  document.getElementById('admin-badge').textContent = data.users.length;
+  renderUsersTable(data.users);
+}
+
+function renderUsersTable(users) {
+  const tbody = document.getElementById('users-table-body');
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--amber),var(--teal));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000">${getInitials(u)}</div>
+          <div>
+            <div style="font-weight:600;color:var(--text)">${u.firstName} ${u.lastName}</div>
+            <div class="text-mono" style="font-size:11px;color:var(--text-muted)">${u.email}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <select class="form-input" style="padding:5px 8px;width:100px;font-size:12px" onchange="changeUserRole('${u.id}',this.value)" ${u.id === currentUser.id ? 'disabled' : ''}>
+          <option value="user"  ${u.role==='user'?'selected':''}>User</option>
+          <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+        </select>
+      </td>
+      <td>${u.twoFactorEnabled ? '<span class="badge badge-green">On</span>' : '<span class="badge badge-muted">Off</span>'}</td>
+      <td>${u.status === 'active'
+        ? '<span class="badge badge-green">Active</span>'
+        : '<span class="badge badge-red">Suspended</span>'}</td>
+      <td class="text-mono">${formatDateShort(u.createdAt)}</td>
+      <td>
+        <div class="flex-gap">
+          ${u.id !== currentUser.id ? `
+            <button class="btn btn-ghost btn-sm" onclick="toggleUserStatus('${u.id}')" title="${u.status==='active'?'Suspend':'Activate'}">
+              ${u.status === 'active' ? '🚫' : '✅'}
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="adminDeleteUser('${u.id}')">Delete</button>` : '<span style="font-size:12px;color:var(--text-muted)">You</span>'}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterUsers() {
+  const q = document.getElementById('user-search').value.toLowerCase();
+  const data = getData();
+  const filtered = data.users.filter(u =>
+    u.email.toLowerCase().includes(q) ||
+    (u.firstName + ' ' + u.lastName).toLowerCase().includes(q)
+  );
+  renderUsersTable(filtered);
+}
+
+function changeUserRole(userId, newRole) {
+  const data = getData();
+  const idx = data.users.findIndex(u => u.id === userId);
+  const old = data.users[idx].role;
+  data.users[idx].role = newRole;
+  saveData(data);
+  addAuditLog(currentUser.id, 'Role Changed', `User ${data.users[idx].email} role changed: ${old} → ${newRole}`, 'amber');
+  toast(`Role updated to ${newRole}`, 'success');
+  loadAdminPanel();
+}
+
+function toggleUserStatus(userId) {
+  const data = getData();
+  const idx = data.users.findIndex(u => u.id === userId);
+  const newStatus = data.users[idx].status === 'active' ? 'suspended' : 'active';
+  data.users[idx].status = newStatus;
+  saveData(data);
+  addAuditLog(currentUser.id, `User ${newStatus === 'suspended' ? 'Suspended' : 'Activated'}`,
+    `User ${data.users[idx].email} was ${newStatus}`, newStatus === 'suspended' ? 'red' : 'green');
+  toast(`User ${newStatus}`, newStatus === 'suspended' ? 'warning' : 'success');
+  loadAdminPanel();
+}
+
+function adminDeleteUser(userId) {
+  const data = getData();
+  const user = data.users.find(u => u.id === userId);
+  if (!user) return;
+  const modal = createModal('Delete User',
+    `<p style="color:var(--text-dim);font-size:13px;">Are you sure you want to permanently delete <strong>${user.firstName} ${user.lastName}</strong>?</p>`,
+    [
+      { label: 'Cancel', class: 'btn-secondary', action: closeModal },
+      { label: 'Delete', class: 'btn-danger', action: () => {
+        const d = getData();
+        d.users = d.users.filter(u => u.id !== userId);
+        d.sessions = d.sessions.filter(s => s.userId !== userId);
+        saveData(d);
+        addAuditLog(currentUser.id, 'User Deleted', `Admin deleted user: ${user.email}`, 'red');
+        closeModal();
+        loadAdminPanel();
+        toast('User deleted', 'info');
+      }}
+    ]);
+  document.body.appendChild(modal);
+}
+
+/* ═══════════════════════════════════════════
+   MODAL SYSTEM
+═══════════════════════════════════════════ */
+function createModal(title, bodyHtml, actions) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'active-modal';
+  overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-title">${title}</div>
+      <div>${bodyHtml}</div>
+      <div class="modal-actions">
+        ${actions.map((a, i) => `<button class="btn ${a.class}" id="modal-action-${i}">${a.label}</button>`).join('')}
+      </div>
+    </div>`;
+  actions.forEach((a, i) => {
+    setTimeout(() => {
+      const btn = document.getElementById('modal-action-' + i);
+      if (btn) btn.onclick = a.action;
+    }, 0);
+  });
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  return overlay;
+}
+
+function closeModal() {
+  const m = document.getElementById('active-modal');
+  if (m) m.remove();
+}
+
+/* ═══════════════════════════════════════════
+   TOAST SYSTEM
+═══════════════════════════════════════════ */
+function toast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span class="toast-icon"></span><span class="toast-text">${message}</span>`;
+  container.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('removing');
+    setTimeout(() => t.remove(), 250);
+  }, 3500);
+}
+
+/* ═══════════════════════════════════════════
+   PASSWORD STRENGTH
+═══════════════════════════════════════════ */
+function getPasswordStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  return score;
+}
+
+function updatePwStrength(pw) {
+  const strength = getPasswordStrength(pw);
+  const labels = ['', 'Weak 😟', 'Fair 😐', 'Good 🙂', 'Strong 💪'];
+  const cls    = ['', 'filled-weak', 'filled-fair', 'filled-good', 'filled-strong'];
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.getElementById('pw-bar-' + i);
+    bar.className = 'pw-bar ' + (i <= strength ? cls[strength] : '');
+  }
+  document.getElementById('pw-label').textContent = pw ? labels[strength] || 'Weak' : 'Password strength';
+}
+
+function updatePwStrength2(pw) {
+  const strength = getPasswordStrength(pw);
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  const cls    = ['', 'filled-weak', 'filled-fair', 'filled-good', 'filled-strong'];
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.getElementById('pw2-bar-' + i);
+    bar.className = 'pw-bar ' + (i <= strength ? cls[strength] : '');
+  }
+  document.getElementById('pw2-label').textContent = pw ? labels[strength] : 'Enter new password';
+}
+
+/* ═══════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════ */
+function togglePw(id, icon) {
+  const input = document.getElementById(id);
+  if (input.type === 'password') { input.type = 'text'; icon.textContent = '🙈'; }
+  else { input.type = 'password'; icon.textContent = '👁'; }
+}
+
+function showError(id)  { const e = document.getElementById(id); if (e) { e.classList.add('visible'); } }
+function hideError(id)  { const e = document.getElementById(id); if (e) { e.classList.remove('visible'); } }
+
+function getInitials(user) {
+  return ((user.firstName?.[0] || '') + (user.lastName?.[0] || '')).toUpperCase() || 'U';
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function formatDateShort(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+}
+
+function timeAgo(iso) {
+  if (!iso) return '—';
+  const seconds = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if (seconds < 60)  return 'just now';
+  if (seconds < 3600) return Math.floor(seconds/60) + 'm ago';
+  if (seconds < 86400) return Math.floor(seconds/3600) + 'h ago';
+  return Math.floor(seconds/86400) + 'd ago';
+}
+
+function getDeviceInfo() {
+  const ua = navigator.userAgent;
+  if (/iPhone/.test(ua)) return 'iPhone · Safari';
+  if (/Android/.test(ua)) return 'Android · Chrome';
+  if (/Mac/.test(ua)) return 'macOS · ' + (/Chrome/.test(ua) ? 'Chrome' : 'Safari');
+  if (/Win/.test(ua)) return 'Windows · ' + (/Chrome/.test(ua) ? 'Chrome' : 'Edge');
+  return 'Unknown Device · Browser';
+}
+
+function getDeviceIcon(device) {
+  if (/iPhone|iOS|Android/i.test(device)) return '📱';
+  if (/Mac|Windows|Linux/i.test(device)) return '💻';
+  return '🖥️';
+}
+
+function getRandomLocation() {
+  const locs = ['New York, US', 'London, UK', 'Mumbai, IN', 'Berlin, DE', 'Tokyo, JP', 'Sydney, AU', 'Toronto, CA'];
+  return locs[Math.floor(Math.random() * locs.length)];
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function showAvatarModal() {
+  toast('Avatar customization coming soon!', 'info');
+}
+
+/* ═══════════════════════════════════════════
+   START
+═══════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
