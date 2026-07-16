@@ -7,9 +7,9 @@ calculation and an optional server-side (PHP) evaluation path.
 
 | File            | Role                                                                 |
 |-----------------|-----------------------------------------------------------------------|
-| `index.php`     | Page shell / markup. Outputs the calculator HTML (PHP used for title, version, and to serve as the app's entry point). |
-| `style.css`     | All visual styling (dark theme, grid layout, responsive).            |
-| `script.js`     | UI logic + a safe recursive-descent expression parser/evaluator (no `eval()`). Handles button clicks, keyboard input, DEG/RAD toggle. |
+| `calc.php`     | Page shell / markup. Outputs the calculator HTML (PHP used for title, version, and to serve as the app's entry point). |
+| `calc.css`     | All visual styling (dark theme, grid layout, responsive).            |
+| `calc.js`     | UI logic + a safe recursive-descent expression parser/evaluator (no `eval()`). Handles button clicks, keyboard input, DEG/RAD toggle. |
 | `calculate.php` | JSON API endpoint. Re-implements the same expression parser in PHP and evaluates the expression server-side when the **"PHP∑"** button is pressed. |
 
 ## Features
